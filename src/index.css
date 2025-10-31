@@ -1,0 +1,11 @@
+/* quiz-app-ui/src/index.css */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+body {
+  /* A clean, pure white background */
+  background-color: #ffffff;
+  
+  /* A very dark default font color for high contrast */
+  color: #212121;
+  font-family: 'Roboto', sans-serif;
+}
