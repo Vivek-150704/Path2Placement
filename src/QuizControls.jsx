@@ -10,7 +10,8 @@ export default function QuizControls() {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/quiz/status');
+        // --- FIX #1 ---
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/quiz/status`);
         setIsActive(response.data.isActive);
       } catch (error) {
         console.error("Failed to fetch quiz status:", error);
@@ -23,9 +24,10 @@ export default function QuizControls() {
 
   const handleToggleChange = async (event) => {
     const newStatus = event.target.checked;
-    setIsActive(newStatus);
+    setIsActive(newStatus); // Optimistically update UI
     try {
-      await axios.put('http://localhost:5000/api/quiz/status', { isActive: newStatus });
+      // --- FIX #2 ---
+      await axios.put(`${import.meta.env.VITE_API_URL}/api/quiz/status`, { isActive: newStatus });
     } catch (error) {
       console.error("Failed to update quiz status:", error);
       // Revert state if the API call fails

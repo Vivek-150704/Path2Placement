@@ -27,7 +27,8 @@ export default function QuizPage() {
   useEffect(() => {
     const initialize = async () => {
       try {
-        const statusResponse = await axios.get('http://localhost:5000/api/quiz/status');
+        // --- FIX #1 ---
+        const statusResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/quiz/status`);
         if (!statusResponse.data.isActive) {
           setQuizState('inactive');
           return;
@@ -63,7 +64,8 @@ export default function QuizPage() {
 
   const handleStartQuiz = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/quiz/start');
+      // --- FIX #2 ---
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/quiz/start`);
       const fetchedQuestions = response.data;
       const questionsWithShuffledOptions = fetchedQuestions.map(q => ({ ...q, options: shuffleArray(q.options) }));
       setQuestions(questionsWithShuffledOptions);
@@ -87,7 +89,8 @@ export default function QuizPage() {
     }));
 
     try {
-      const response = await axios.post('http://localhost:5000/api/submit', {
+      // --- FIX #3 ---
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/submit`, {
         userDetails,
         userAnswers,
       });
@@ -182,7 +185,6 @@ export default function QuizPage() {
           <Paper elevation={4} sx={{ p: { xs: 2, sm: 4 }, borderRadius: '12px' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h5" component="h1" fontWeight="700">MERN Stack Quiz</Typography>
-              {/* --- TIMER DURATION SET TO 3600 SECONDS (60 MINUTES) --- */}
               <Timer duration={3600} onTimeUp={submitQuiz} />
             </Box>
             <Box sx={{ mb: 4 }}>

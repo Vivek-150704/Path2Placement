@@ -213,7 +213,7 @@ function AnalyticsCharts({ results, loading }) {
                   <Cell key={i} fill={COLORS[i % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(v, _, props) => [`${v} Students`, props.name]} />
+              <Tooltip formatter={(v, _, props) => [`${v} Students`, props.payload.name]} />
               <Legend verticalAlign="bottom" height={36} />
             </PieChart>
           </ResponsiveContainer>
@@ -239,7 +239,7 @@ function AnalyticsCharts({ results, loading }) {
                   <Cell key={i} fill={COLORS[i % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(v, _, props) => [`${v} Students`, props.name]} />
+              <Tooltip formatter={(v, _, props) => [`${v} Students`, props.payload.name]} />
               <Legend verticalAlign="bottom" height={36} />
             </PieChart>
           </ResponsiveContainer>
@@ -265,7 +265,7 @@ function AnalyticsCharts({ results, loading }) {
                   <Cell key={i} fill={COLORS[i % COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip formatter={(v, _, props) => [`${v} Students`, props.name]} />
+              <Tooltip formatter={(v, _, props) => [`${v} Students`, props.payload.name]} />
               <Legend verticalAlign="bottom" height={36} />
             </PieChart>
           </ResponsiveContainer>
@@ -355,7 +355,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchResults = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/results');
+        // --- THIS LINE IS NOW CORRECTED ---
+        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/results`);
         setResults(res.data);
       } catch (err) {
         console.error('Error fetching results:', err);

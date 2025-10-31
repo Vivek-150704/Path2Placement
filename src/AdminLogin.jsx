@@ -1,5 +1,5 @@
 // src/AdminLogin.jsx
-import React, { useState } from 'react'; // <-- The fix is on this line
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Box, Button, TextField, Typography, Paper, Container } from '@mui/material';
@@ -15,8 +15,8 @@ export default function AdminLogin() {
     setError('');
 
     try {
-      // Send login request to the backend
-      const response = await axios.post('http://localhost:5000/api/admin/login', {
+      // --- THIS LINE IS NOW CORRECTED ---
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/login`, {
         username,
         password,
       });

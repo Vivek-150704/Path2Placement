@@ -55,7 +55,6 @@ export default function Registration({ onRegister }) {
     setValidationErrors(prev => ({ ...prev, [name]: error }));
     setGlobalError('');
 
-    // If the USN field is being changed, clear any previous "already used" error
     if (name === 'usn') {
       if (validationErrors.usn === 'This USN has already been used.') {
         setValidationErrors(prev => ({ ...prev, usn: '' }));
@@ -64,20 +63,19 @@ export default function Registration({ onRegister }) {
   };
 
   const handleUsnBlur = async () => {
-    // Don't check if the field is empty or already has a format error
     if (formData.usn.trim() === '' || (validationErrors.usn && validationErrors.usn !== 'This USN has already been used.')) {
       return;
     }
 
     setIsCheckingUsn(true);
     try {
-      const response = await axios.post('http://localhost:5000/api/check-usn', { usn: formData.usn });
+      // --- THIS LINE IS NOW CORRECTED ---
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/check-usn`, { usn: formData.usn });
       if (response.data.exists) {
         setValidationErrors(prev => ({ ...prev, usn: 'This USN has already been used.' }));
       }
     } catch (error) {
       console.error('Error checking USN:', error);
-      // Optionally, set a general error if the check fails
       setGlobalError('Could not verify USN. Please try again.');
     } finally {
       setIsCheckingUsn(false);
@@ -89,13 +87,11 @@ export default function Registration({ onRegister }) {
     let errors = {};
     let allFieldsValid = true;
 
-    // Check for any existing validation errors (like a used USN)
     if (Object.values(validationErrors).some(error => error !== '')) {
       setGlobalError('Please fix the errors before submitting.');
       return;
     }
 
-    // Run final validation on all fields to check for emptiness
     Object.keys(formData).forEach(key => {
       const fieldError = validateField(key, formData[key]);
       if (formData[key].trim() === '') {

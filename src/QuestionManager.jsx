@@ -25,8 +25,8 @@ import { Edit, Delete } from '@mui/icons-material';
 export default function QuestionManager() {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState(false); // For the add/edit dialog
-  const [currentQuestion, setCurrentQuestion] = useState(null); // Question being edited
+  const [open, setOpen] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(null);
 
   useEffect(() => {
     fetchQuestions();
@@ -35,7 +35,8 @@ export default function QuestionManager() {
   const fetchQuestions = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/questions');
+      // --- FIX #1 ---
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/questions`);
       setQuestions(response.data);
     } catch (error) {
       console.error("Failed to fetch questions:", error);
@@ -57,8 +58,9 @@ export default function QuestionManager() {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this question?')) {
       try {
-        await axios.delete(`http://localhost:5000/api/questions/${id}`);
-        fetchQuestions(); // Refresh the list after deleting
+        // --- FIX #2 ---
+        await axios.delete(`${import.meta.env.VITE_API_URL}/api/questions/${id}`);
+        fetchQuestions();
       } catch (error) {
         console.error("Failed to delete question:", error);
       }
@@ -70,20 +72,20 @@ export default function QuestionManager() {
     const formData = new FormData(event.currentTarget);
     const data = {
       questionText: formData.get('questionText'),
-      options: formData.get('options').split(',').map(opt => opt.trim()), // Split by comma and trim whitespace
+      options: formData.get('options').split(',').map(opt => opt.trim()),
       correctAnswer: formData.get('correctAnswer'),
       explanation: formData.get('explanation'),
     };
 
     try {
       if (currentQuestion) {
-        // Update existing question
-        await axios.put(`http://localhost:5000/api/questions/${currentQuestion._id}`, data);
+        // --- FIX #3 ---
+        await axios.put(`${import.meta.env.VITE_API_URL}/api/questions/${currentQuestion._id}`, data);
       } else {
-        // Create new question
-        await axios.post('http://localhost:5000/api/questions', data);
+        // --- FIX #4 ---
+        await axios.post(`${import.meta.env.VITE_API_URL}/api/questions`, data);
       }
-      fetchQuestions(); // Refresh the list after saving
+      fetchQuestions();
       handleClose();
     } catch (error) {
       console.error("Failed to save question:", error);
@@ -124,7 +126,6 @@ export default function QuestionManager() {
         </Table>
       </TableContainer>
 
-      {/* Add/Edit Question Dialog */}
       <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
         <DialogTitle>{currentQuestion ? 'Edit Question' : 'Add New Question'}</DialogTitle>
         <DialogContent>
