@@ -1,4 +1,4 @@
-// quiz-app-ui/src/Timer.jsx
+// Round-1/src/Timer.jsx
 import React, { useState, useEffect } from 'react';
 import { Typography, Box } from '@mui/material';
 

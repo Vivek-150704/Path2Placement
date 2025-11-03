@@ -1,4 +1,4 @@
-// quiz-app-ui/src/QuestionPalette.jsx
+// Round-1/src/QuestionPalette.jsx
 import React from 'react';
 import { Box, Typography, Paper, Grid, Chip } from '@mui/material';
 
