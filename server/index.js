@@ -54,7 +54,9 @@ app.post('/api/submit', async (req, res) => {
     correctQuestions.forEach(q => { answerMap.set(q._id.toString(), q.correctAnswer); });
     let score = 0;
     userAnswers.forEach(ans => { if (answerMap.get(ans.questionId) === ans.selectedAnswer) { score++; } });
-    const resultData = { ...userDetails, score: score, totalQuestions: correctQuestions.length, };
+    
+    // Use the userDetails from the request, which no longer has teamName
+    const resultData = { ...userDetails, score: score, totalQuestions: correctQuestions.length };
     const newResult = new Result(resultData);
     await newResult.save();
     res.status(201).json({ message: 'Quiz result saved successfully!', score: score, total: correctQuestions.length });
@@ -65,14 +67,36 @@ app.post('/api/submit', async (req, res) => {
 });
 
 
-// --- ALL OTHER ENDPOINTS REMAIN THE SAME ---
+// --- ADMIN & QUESTION ENDPOINTS ---
 app.post('/api/admin/login', async (req, res) => { try { const { username, password } = req.body; const admin = await Admin.findOne({ username }); if (!admin || admin.password !== password) { return res.status(401).json({ message: 'Invalid credentials' }); } res.status(200).json({ message: 'Admin login successful' }); } catch (error) { res.status(500).json({ message: 'Server error' }); } });
 app.get('/api/results', async (req, res) => { try { const results = await Result.find({}).sort({ submittedAt: -1 }); res.status(200).json(results); } catch (error) { res.status(500).json({ message: 'Server error' }); } });
 app.get('/api/questions', async (req, res) => { try { const questions = await Question.find({}); res.status(200).json(questions); } catch (error) { res.status(500).json({ message: 'Server error' }); } });
 app.post('/api/questions', async (req, res) => { try { const newQuestion = new Question(req.body); await newQuestion.save(); res.status(201).json(newQuestion); } catch (error) { res.status(500).json({ message: 'Failed to create question.' }); } });
 app.put('/api/questions/:id', async (req, res) => { try { const updatedQuestion = await Question.findByIdAndUpdate(req.params.id, req.body, { new: true }); res.status(200).json(updatedQuestion); } catch (error) { res.status(500).json({ message: 'Failed to update question.' }); } });
 app.delete('/api/questions/:id', async (req, res) => { try { await Question.findByIdAndDelete(req.params.id); res.status(200).json({ message: 'Question deleted successfully.' }); } catch (error) { res.status(500).json({ message: 'Failed to delete question.' }); } });
-app.get('/api/quiz/start', async (req, res) => { try { const questionCount = 20; const randomQuestions = await Question.aggregate([{ $sample: { size: questionCount } }]); const questionsForStudent = randomQuestions.map(q => { const { correctAnswer, explanation, ...question } = q; return question; }); res.status(200).json(questionsForStudent); } catch (error) { res.status(500).json({ message: 'Could not fetch questions for the quiz.' }); } });
+
+
+// --- STUDENT: GET QUIZ QUESTIONS (CORRECTED) ---
+app.get('/api/quiz/start', async (req, res) => {
+  try {
+    // This now fetches ALL questions from the database
+    const allQuestions = await Question.find({});
+    
+    // Manually remove the correctAnswer and explanation fields
+    const questionsForStudent = allQuestions.map(q => {
+      const { correctAnswer, explanation, ...question } = q.toObject(); // Use .toObject() for safety
+      return question;
+    });
+
+    res.status(200).json(questionsForStudent);
+  } catch (error) {
+    console.error('Error starting quiz:', error);
+    res.status(500).json({ message: 'Could not fetch questions for the quiz.' });
+  }
+});
+
+
+// --- QUIZ STATUS ENDPOINTS ---
 app.get('/api/quiz/status', async (req, res) => { try { let setting = await QuizSetting.findOne({ settingName: 'mainQuiz' }); if (!setting) { setting = new QuizSetting(); await setting.save(); } res.status(200).json({ isActive: setting.isActive }); } catch (error) { res.status(500).json({ message: 'Server error fetching status.' }); } });
 app.put('/api/quiz/status', async (req, res) => { try { const { isActive } = req.body; const updatedSetting = await QuizSetting.findOneAndUpdate( { settingName: 'mainQuiz' }, { isActive: isActive }, { new: true, upsert: true } ); res.status(200).json(updatedSetting); } catch (error) { res.status(500).json({ message: 'Failed to update quiz status.' }); } });
 

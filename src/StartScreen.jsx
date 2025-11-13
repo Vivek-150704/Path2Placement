@@ -12,7 +12,7 @@ export default function StartScreen({ userName, onStartQuiz }) {
           </Typography>
           <Typography variant="h6" color="text.secondary" sx={{ my: 4 }}>
             {/* --- THIS TEXT IS NOW UPDATED --- */}
-            You will have <Box component="span" fontWeight="bold">20 minutes</Box> to complete the quiz.
+            You will have <Box component="span" fontWeight="bold">60 minutes</Box> to complete the quiz.
             <br />
             Switching tabs will result in automatic submission. Good luck!
           </Typography>

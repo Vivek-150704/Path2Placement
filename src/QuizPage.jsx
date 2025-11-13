@@ -16,7 +16,6 @@ const shuffleArray = (array) => {
   return newArray;
 };
 
-// --- THIS IS THE NEW, MORE ROBUST STATE INITIALIZATION ---
 // We use a function inside useState to load from localStorage ONLY ONCE.
 const loadInitialState = () => {
   const savedUserDetails = localStorage.getItem('userDetails');
@@ -69,7 +68,7 @@ export default function QuizPage() {
       }
     };
     checkStatus();
-  }, []); // Runs once on mount
+  }, [quizState]); // Rerun if quizState changes (e.g., from loading)
 
   const handleRegister = (data) => {
     setUserDetails(data);
@@ -200,7 +199,8 @@ export default function QuizPage() {
           <Paper elevation={4} sx={{ p: { xs: 2, sm: 4 }, borderRadius: '12px' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h5" component="h1" fontWeight="700">MERN Stack Quiz</Typography>
-              <Timer duration={1200} onTimeUp={submitQuiz} />
+              {/* --- TIMER DURATION SET TO 3600 SECONDS (60 MINUTES) --- */}
+              <Timer duration={3600} onTimeUp={submitQuiz} />
             </Box>
             <Box sx={{ mb: 4 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>

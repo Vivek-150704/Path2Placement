@@ -5,14 +5,7 @@ import { Box, Button, TextField, Typography, Paper, Grid, Container, CircularPro
 
 export default function Registration({ onRegister }) {
   const [formData, setFormData] = useState({
-    name: '',
-    usn: '',
-    teamName: '', // <-- NEW FIELD
-    branch: '',
-    school: '',
-    year: '',
-    email: '',
-    phone: ''
+    name: '', usn: '', branch: '', school: '', year: '', email: '', phone: ''
   });
   const [validationErrors, setValidationErrors] = useState({});
   const [globalError, setGlobalError] = useState('');
@@ -23,7 +16,6 @@ export default function Registration({ onRegister }) {
     usn: /^[A-Z0-9]+$/,
     phone: /^\d{10}$/,
     year: /^[1-5]$/,
-    teamName: /^[a-zA-Z0-9\s]+$/, // <-- NEW RULE (alphanumeric + spaces)
   };
 
   const validateField = (name, value) => {
@@ -46,9 +38,6 @@ export default function Registration({ onRegister }) {
         case 'year':
           error = 'Year must be a single digit (1-5).';
           break;
-        case 'teamName':
-          error = 'Team Name must contain only letters, numbers, and spaces.';
-          break;
         default:
           break;
       }
@@ -58,8 +47,8 @@ export default function Registration({ onRegister }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // Process uppercase for USN, Branch, and Team Name
-    const processedValue = (name === 'usn' || name === 'branch' || name === 'teamName') ? value.toUpperCase() : value;
+    // Process uppercase for USN and Branch
+    const processedValue = (name === 'usn' || name === 'branch') ? value.toUpperCase() : value;
     
     setFormData(prev => ({ ...prev, [name]: processedValue }));
 
@@ -140,14 +129,14 @@ export default function Registration({ onRegister }) {
               {[
                 { name: 'name', label: 'Full Name' },
                 { name: 'usn', label: 'USN (University Seat Number)', onBlur: handleUsnBlur },
-                { name: 'teamName', label: 'Team Name' }, // <-- NEW FIELD
+                // "Team Name" field removed from this array
                 { name: 'branch', label: 'Branch (e.g., CSE)' },
                 { name: 'school', label: 'College Name' },
                 { name: 'year', label: 'Year of Study' },
                 { name: 'email', label: 'Email Address', type: 'email' },
                 { name: 'phone', label: 'Phone Number', type: 'tel' }
               ].map((field) => {
-                const isUppercase = field.name === 'usn' || field.name === 'branch' || field.name === 'teamName';
+                const isUppercase = field.name === 'usn' || field.name === 'branch';
                 return (
                   <Grid item xs={12} sm={6} key={field.name}>
                     <TextField

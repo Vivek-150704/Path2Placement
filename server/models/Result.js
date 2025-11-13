@@ -5,7 +5,7 @@ const resultSchema = new mongoose.Schema({
   // From the registration form
   name: { type: String, required: true },
   usn: { type: String, required: true },
-  teamName: { type: String, required: true }, // <-- NEW FIELD
+  // "teamName" field removed
   branch: { type: String, required: true },
   school: { type: String, required: true },
   year: { type: String, required: true },
