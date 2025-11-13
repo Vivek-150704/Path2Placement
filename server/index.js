@@ -17,6 +17,15 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected successfully.'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
+// --- Helper function to shuffle an array ---
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
 // --- NEW ENDPOINT: Check if USN already exists ---
 app.post('/api/check-usn', async (req, res) => {
   try {
@@ -25,10 +34,7 @@ app.post('/api/check-usn', async (req, res) => {
       return res.status(400).json({ message: 'USN is required.' });
     }
     const existingResult = await Result.findOne({ usn: usn.toUpperCase() });
-    if (existingResult) {
-      return res.status(200).json({ exists: true });
-    }
-    res.status(200).json({ exists: false });
+    res.status(200).json({ exists: !!existingResult });
   } catch (error) {
     res.status(500).json({ message: 'Server error while checking USN.' });
   }
@@ -55,7 +61,7 @@ app.post('/api/submit', async (req, res) => {
     let score = 0;
     userAnswers.forEach(ans => { if (answerMap.get(ans.questionId) === ans.selectedAnswer) { score++; } });
     
-    // Use the userDetails from the request, which no longer has teamName
+    // Use the userDetails from the request
     const resultData = { ...userDetails, score: score, totalQuestions: correctQuestions.length };
     const newResult = new Result(resultData);
     await newResult.save();
@@ -76,15 +82,17 @@ app.put('/api/questions/:id', async (req, res) => { try { const updatedQuestion 
 app.delete('/api/questions/:id', async (req, res) => { try { await Question.findByIdAndDelete(req.params.id); res.status(200).json({ message: 'Question deleted successfully.' }); } catch (error) { res.status(500).json({ message: 'Failed to delete question.' }); } });
 
 
-// --- STUDENT: GET QUIZ QUESTIONS (CORRECTED) ---
+// --- STUDENT: GET QUIZ QUESTIONS (UPDATED) ---
 app.get('/api/quiz/start', async (req, res) => {
   try {
-    // This now fetches ALL questions from the database
     const allQuestions = await Question.find({});
     
+    // --- NEW: Shuffle the questions ---
+    const shuffledQuestions = shuffleArray(allQuestions);
+
     // Manually remove the correctAnswer and explanation fields
-    const questionsForStudent = allQuestions.map(q => {
-      const { correctAnswer, explanation, ...question } = q.toObject(); // Use .toObject() for safety
+    const questionsForStudent = shuffledQuestions.map(q => {
+      const { correctAnswer, explanation, ...question } = q.toObject();
       return question;
     });
 
