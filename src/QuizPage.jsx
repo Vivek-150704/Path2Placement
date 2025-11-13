@@ -71,7 +71,6 @@ export default function QuizPage() {
 
   const handleStartQuiz = async () => {
     try {
-      // --- THIS IS THE CORRECTED LINE ---
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/quiz/start`);
       const fetchedQuestions = response.data;
       
@@ -167,8 +166,9 @@ export default function QuizPage() {
         <Container maxWidth="lg">
           <Paper elevation={4} sx={{ p: { xs: 2, sm: 4 }, borderRadius: '12px' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h5" component="h1" fontWeight="700">MERN Stack Quiz</Typography>
-              <Timer duration={1200} onTimeUp={submitQuiz} />
+              <Typography variant="h5" component="h1" fontWeight="700">Aptitude Test</Typography>
+              {/* --- TIMER DURATION IS 3600 SECONDS (60 MINUTES) --- */}
+              <Timer duration={3600} onTimeUp={submitQuiz} />
             </Box>
             <Box sx={{ mb: 4 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
