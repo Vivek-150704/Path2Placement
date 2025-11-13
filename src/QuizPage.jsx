@@ -16,34 +16,51 @@ const shuffleArray = (array) => {
   return newArray;
 };
 
+// --- THIS IS THE NEW, MORE ROBUST STATE INITIALIZATION ---
+// We use a function inside useState to load from localStorage ONLY ONCE.
+const loadInitialState = () => {
+  const savedUserDetails = localStorage.getItem('userDetails');
+  const savedQuestions = localStorage.getItem('questions');
+  const savedAnswers = localStorage.getItem('answers');
+  const savedQuizState = localStorage.getItem('quizState');
+
+  if (savedUserDetails && savedQuizState && savedQuizState !== 'submitted') {
+    return {
+      userDetails: JSON.parse(savedUserDetails),
+      questions: JSON.parse(savedQuestions || '[]'),
+      answers: JSON.parse(savedAnswers || '{}'),
+      quizState: savedQuizState,
+    };
+  }
+  // Default state if nothing is saved
+  return {
+    userDetails: null,
+    questions: [],
+    answers: {},
+    quizState: 'registering',
+  };
+};
+
+
 export default function QuizPage() {
-  const [quizState, setQuizState] = useState('loading');
-  const [questions, setQuestions] = useState([]);
-  const [answers, setAnswers] = useState({});
-  const [userDetails, setUserDetails] = useState(null);
+  const initialState = loadInitialState();
+  const [userDetails, setUserDetails] = useState(initialState.userDetails);
+  const [questions, setQuestions] = useState(initialState.questions);
+  const [answers, setAnswers] = useState(initialState.answers);
+  const [quizState, setQuizState] = useState(initialState.quizState);
+
   const [finalScore, setFinalScore] = useState(null);
   const submittedRef = useRef(false);
 
+  // This useEffect now ONLY checks the quiz activation status
   useEffect(() => {
-    const initialize = async () => {
+    const checkStatus = async () => {
       try {
         const statusResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/quiz/status`);
         if (!statusResponse.data.isActive) {
-          setQuizState('inactive');
-          return;
-        }
-
-        const savedUserDetails = localStorage.getItem('userDetails');
-        const savedQuizState = localStorage.getItem('quizState');
-        const savedAnswers = localStorage.getItem('answers');
-        const savedQuestions = localStorage.getItem('questions');
-
-        if (savedUserDetails && savedQuizState && savedQuizState !== 'submitted') {
-          setUserDetails(JSON.parse(savedUserDetails));
-          setAnswers(JSON.parse(savedAnswers || '{}'));
-          setQuestions(JSON.parse(savedQuestions || '[]'));
-          setQuizState(savedQuizState);
-        } else {
+          setQuizState('inactive'); // If not active, override all other states
+        } else if (quizState === 'loading') {
+          // If quiz is active and we are still loading, default to registering
           setQuizState('registering');
         }
       } catch (error) {
@@ -51,8 +68,8 @@ export default function QuizPage() {
         setQuizState('inactive');
       }
     };
-    initialize();
-  }, []);
+    checkStatus();
+  }, []); // Runs once on mount
 
   const handleRegister = (data) => {
     setUserDetails(data);
@@ -68,6 +85,7 @@ export default function QuizPage() {
       const questionsWithShuffledOptions = fetchedQuestions.map(q => ({ ...q, options: shuffleArray(q.options) }));
       setQuestions(questionsWithShuffledOptions);
       setQuizState('active');
+      setAnswers({}); // Clear any old answers
       localStorage.setItem('questions', JSON.stringify(questionsWithShuffledOptions));
       localStorage.setItem('answers', JSON.stringify({}));
       localStorage.setItem('quizState', 'active');
@@ -182,7 +200,6 @@ export default function QuizPage() {
           <Paper elevation={4} sx={{ p: { xs: 2, sm: 4 }, borderRadius: '12px' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h5" component="h1" fontWeight="700">MERN Stack Quiz</Typography>
-              {/* --- TIMER DURATION SET TO 1200 SECONDS (20 MINUTES) --- */}
               <Timer duration={1200} onTimeUp={submitQuiz} />
             </Box>
             <Box sx={{ mb: 4 }}>

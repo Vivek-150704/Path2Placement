@@ -16,13 +16,15 @@ import {
   TablePagination, 
   Tabs, 
   Tab,
-  Grid
+  Grid,
+  Button // <-- Import Button
 } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
+import { CSVLink } from 'react-csv'; // <-- Import CSVLink
 import QuestionManager from './QuestionManager';
 import QuizControls from './QuizControls';
 
-// --- 1. Helper function for Analytics (UPDATED) ---
+// --- 1. Helper function for Analytics (Unchanged) ---
 const processAnalyticsData = (results) => {
   const scoreDistribution = {};
   const branchParticipation = {};
@@ -32,13 +34,10 @@ const processAnalyticsData = (results) => {
   results.forEach(result => {
     const score = result.score;
     scoreDistribution[score] = (scoreDistribution[score] || 0) + 1;
-
     const branch = result.branch || 'N/A';
     branchParticipation[branch] = (branchParticipation[branch] || 0) + 1;
-
     const school = result.school || 'N/A';
     schoolParticipation[school] = (schoolParticipation[school] || 0) + 1;
-    
     const year = result.year || 'N/A';
     yearParticipation[year] = (yearParticipation[year] || 0) + 1;
   });
@@ -67,11 +66,11 @@ const processAnalyticsData = (results) => {
 };
 
 
-// --- 2. Analytics Charts Component (UPDATED with new charts) ---
+// --- 2. Analytics Charts Component (Unchanged) ---
 function AnalyticsCharts({ results, loading }) {
   const { scoreData, branchData, schoolData, yearData } = processAnalyticsData(results);
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#8A2BE2', '#DC143C', '#20B2AA'];
-  const CHART_HEIGHT = 300;
+  const CHART_HEIGHT = 300; 
 
   if (loading) {
     return <CircularProgress sx={{ m: 5 }} />;
@@ -91,7 +90,6 @@ function AnalyticsCharts({ results, loading }) {
     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
     const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
     const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
-
     return (
       <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={12} fontWeight="bold">
         {`${(percent * 100).toFixed(0)}%`}
@@ -99,14 +97,13 @@ function AnalyticsCharts({ results, loading }) {
     );
   };
 
-
   return (
     <Grid container spacing={4}>
       <Grid item xs={12} md={6} key="score-chart">
         <Paper elevation={4} sx={{ p: 3, borderRadius: '12px' }}>
           <Typography variant="h6" fontWeight="bold" gutterBottom>Score Distribution</Typography>
           <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-            <BarChart data={scoreData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+            <BarChart data={scoreData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="score" label={{ value: 'Score', position: 'bottom', offset: 0 }} minTickGap={5} />
               <YAxis allowDecimals={false} domain={[0, 'dataMax + 1']} label={{ value: 'No. of Students', angle: -90, position: 'insideLeft', offset: 10 }} />
@@ -116,26 +113,13 @@ function AnalyticsCharts({ results, loading }) {
           </ResponsiveContainer>
         </Paper>
       </Grid>
-
       <Grid item xs={12} md={6} key="branch-chart">
         <Paper elevation={4} sx={{ p: 3, borderRadius: '12px' }}>
           <Typography variant="h6" fontWeight="bold" gutterBottom>Participation by Branch</Typography>
           <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
             <PieChart margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-              <Pie
-                data={branchData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                fill="#8884d8"
-                label={renderCustomizedLabel}
-                labelLine={false}
-              >
-                {branchData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
+              <Pie data={branchData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#8884d8" label={renderCustomizedLabel} labelLine={false}>
+                {branchData.map((entry, index) => ( <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} /> ))}
               </Pie>
               <Tooltip formatter={(value, name, props) => [`${value} Students`, props.payload.name]} />
               <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ paddingLeft: '15px' }} />
@@ -143,26 +127,13 @@ function AnalyticsCharts({ results, loading }) {
           </ResponsiveContainer>
         </Paper>
       </Grid>
-      
       <Grid item xs={12} md={6} key="school-chart">
         <Paper elevation={4} sx={{ p: 3, borderRadius: '12px' }}>
           <Typography variant="h6" fontWeight="bold" gutterBottom>Participation by School</Typography>
           <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
             <PieChart margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-              <Pie
-                data={schoolData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                fill="#8884d8"
-                label={renderCustomizedLabel}
-                labelLine={false}
-              >
-                {schoolData.map((entry, index) => (
-                  <Cell key={`cell-school-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
+              <Pie data={schoolData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#8884d8" label={renderCustomizedLabel} labelLine={false}>
+                {schoolData.map((entry, index) => ( <Cell key={`cell-school-${index}`} fill={COLORS[index % COLORS.length]} /> ))}
               </Pie>
               <Tooltip formatter={(value, name, props) => [`${value} Students`, props.payload.name]} />
               <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ paddingLeft: '15px' }} />
@@ -170,26 +141,13 @@ function AnalyticsCharts({ results, loading }) {
           </ResponsiveContainer>
         </Paper>
       </Grid>
-      
       <Grid item xs={12} md={6} key="year-chart">
         <Paper elevation={4} sx={{ p: 3, borderRadius: '12px' }}>
           <Typography variant="h6" fontWeight="bold" gutterBottom>Participation by Year</Typography>
           <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
             <PieChart margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-              <Pie
-                data={yearData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={100}
-                fill="#8884d8"
-                label={renderCustomizedLabel}
-                labelLine={false}
-              >
-                {yearData.map((entry, index) => (
-                  <Cell key={`cell-year-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
+              <Pie data={yearData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#8884d8" label={renderCustomizedLabel} labelLine={false}>
+                {yearData.map((entry, index) => ( <Cell key={`cell-year-${index}`} fill={COLORS[index % COLORS.length]} /> ))}
               </Pie>
               <Tooltip formatter={(value, name, props) => [`${value} Students`, props.payload.name]} />
               <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ paddingLeft: '15px' }} />
@@ -202,7 +160,7 @@ function AnalyticsCharts({ results, loading }) {
 }
 
 
-// --- 3. Results Table Component (UPDATED) ---
+// --- 3. Results Table Component (UPDATED with CSV Export) ---
 function ResultsTable({ results, loading }) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -214,16 +172,51 @@ function ResultsTable({ results, loading }) {
   };
   const paginatedResults = results.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
+  // --- NEW: Define headers for the CSV file ---
+  const csvHeaders = [
+    { label: "Name", key: "name" },
+    { label: "USN", key: "usn" },
+    { label: "Team Name", key: "teamName" },
+    { label: "Branch", key: "branch" },
+    { label: "School", key: "school" },
+    { label: "Year", key: "year" },
+    { label: "Email", key: "email" },
+    { label: "Phone", key: "phone" },
+    { label: "Score", key: "score" },
+    { label: "Total Questions", key: "totalQuestions" },
+    { label: "Submitted At", key: "submittedAt" }
+  ];
+
   return (
     <Paper elevation={4} sx={{ p: 3, borderRadius: '12px' }}>
-      <Typography variant="h6" fontWeight="bold" gutterBottom>Student Quiz Submissions</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h6" fontWeight="bold">Student Quiz Submissions</Typography>
+        
+        {/* --- NEW: Add the CSV Download Button --- */}
+        <Button
+          variant="contained"
+          color="success"
+          disabled={loading}
+          sx={{ textDecoration: 'none' }} // Remove underline from CSVLink
+        >
+          <CSVLink
+            data={results} // Pass all results, not just paginated
+            headers={csvHeaders}
+            filename={"quiz_results.csv"}
+            style={{ textDecoration: 'none', color: 'white' }}
+          >
+            Export to Excel
+          </CSVLink>
+        </Button>
+      </Box>
+
       <TableContainer>
         <Table>
           <TableHead>
             <TableRow>
               <TableCell sx={{fontWeight: 'bold'}}>Name</TableCell>
               <TableCell sx={{fontWeight: 'bold'}}>USN</TableCell>
-              <TableCell sx={{fontWeight: 'bold'}}>Team Name</TableCell> {/* <-- NEW COLUMN */}
+              <TableCell sx={{fontWeight: 'bold'}}>Team Name</TableCell>
               <TableCell sx={{fontWeight: 'bold'}}>Branch</TableCell>
               <TableCell sx={{fontWeight: 'bold'}}>Score</TableCell>
               <TableCell sx={{fontWeight: 'bold'}}>Submitted At</TableCell>
@@ -237,7 +230,7 @@ function ResultsTable({ results, loading }) {
                 <TableRow key={result._id} hover>
                   <TableCell>{result.name}</TableCell>
                   <TableCell>{result.usn}</TableCell>
-                  <TableCell>{result.teamName}</TableCell> {/* <-- NEW DATA CELL */}
+                  <TableCell>{result.teamName}</TableCell>
                   <TableCell>{result.branch}</TableCell>
                   <TableCell>{`${result.score} / ${result.totalQuestions}`}</TableCell>
                   <TableCell>{new Date(result.submittedAt).toLocaleString()}</TableCell>
