@@ -17,15 +17,27 @@ import {
   Tabs, 
   Tab,
   Grid,
-  Button // Make sure Button is imported
+  Button
 } from '@mui/material';
-// Correct import from recharts
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { CSVLink } from 'react-csv'; // Correct import from react-csv
+import { 
+  BarChart, 
+  Bar, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  PieChart, 
+  Pie, 
+  Cell, 
+  ResponsiveContainer, 
+  Legend 
+} from 'recharts';
+import { CSVLink } from 'react-csv';
 import QuestionManager from './QuestionManager';
 import QuizControls from './QuizControls';
 
-// --- 1. Helper function for Analytics ---
+
+// --- 1. Helper function for Analytics (Unchanged) ---
 const processAnalyticsData = (results) => {
   const scoreDistribution = {};
   const branchParticipation = {};
@@ -67,11 +79,11 @@ const processAnalyticsData = (results) => {
 };
 
 
-// --- 2. Analytics Charts Component ---
+// --- 2. Analytics Charts Component (Fixed Layout, Same Logic) ---
 function AnalyticsCharts({ results, loading }) {
   const { scoreData, branchData, schoolData, yearData } = processAnalyticsData(results);
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#8A2BE2', '#DC143C', '#20B2AA'];
-  const CHART_HEIGHT = 300; 
+  const CHART_HEIGHT = 300;
 
   if (loading) {
     return <CircularProgress sx={{ m: 5 }} />;
@@ -87,73 +99,123 @@ function AnalyticsCharts({ results, loading }) {
     );
   }
 
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
-    const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
-    return (
-      <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize={12} fontWeight="bold">
-        {`${(percent * 100).toFixed(0)}%`}
-      </text>
-    );
-  };
+  // ✅ Simpler label to avoid overlap
+  const renderLabel = ({ percent }) => `${(percent * 100).toFixed(0)}%`;
 
   return (
     <Grid container spacing={4}>
-      <Grid item xs={12} md={6} key="score-chart">
-        <Paper elevation={4} sx={{ p: 3, borderRadius: '12px' }}>
-          <Typography variant="h6" fontWeight="bold" gutterBottom>Score Distribution</Typography>
+      {/* 1. Score Distribution */}
+      <Grid item xs={12} md={6}>
+        <Paper elevation={4} sx={{ p: 3, borderRadius: '12px', height: '100%' }}>
+          <Typography variant="h6" fontWeight="bold" gutterBottom>
+            Score Distribution
+          </Typography>
           <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-            <BarChart data={scoreData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <BarChart data={scoreData} margin={{ top: 20, right: 20, left: 0, bottom: 20 }}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="score" label={{ value: 'Score', position: 'bottom', offset: 0 }} minTickGap={5} />
-              <YAxis allowDecimals={false} domain={[0, 'dataMax + 1']} label={{ value: 'No. of Students', angle: -90, position: 'insideLeft', offset: 10 }} />
+              <XAxis dataKey="score" />
+              <YAxis allowDecimals={false} />
               <Tooltip formatter={(value) => `${value} Students`} />
-              <Bar dataKey="count" fill="#8884d8" />
+              <Bar dataKey="count" fill="#8884d8" radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </Paper>
       </Grid>
-      <Grid item xs={12} md={6} key="branch-chart">
-        <Paper elevation={4} sx={{ p: 3, borderRadius: '12px' }}>
-          <Typography variant="h6" fontWeight="bold" gutterBottom>Participation by Branch</Typography>
+
+      {/* 2. Participation by Year */}
+      <Grid item xs={12} md={6}>
+        <Paper elevation={4} sx={{ p: 3, borderRadius: '12px', height: '100%' }}>
+          <Typography variant="h6" fontWeight="bold" gutterBottom>
+            Participation by Year
+          </Typography>
           <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-            <PieChart margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-              <Pie data={branchData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#8884d8" label={renderCustomizedLabel} labelLine={false}>
-                {branchData.map((entry, index) => ( <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} /> ))}
+            <PieChart>
+              <Pie
+                data={yearData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={90}
+                label={renderLabel}
+                labelLine={false}
+              >
+                {yearData.map((entry, index) => (
+                  <Cell key={`cell-year-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
               </Pie>
-              <Tooltip formatter={(value, name, props) => [`${value} Students`, props.payload.name]} />
-              <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ paddingLeft: '15px' }} />
+              <Tooltip />
+              <Legend layout="horizontal" verticalAlign="bottom" align="center" />
             </PieChart>
           </ResponsiveContainer>
         </Paper>
       </Grid>
-      <Grid item xs={12} md={6} key="school-chart">
-        <Paper elevation={4} sx={{ p: 3, borderRadius: '12px' }}>
-          <Typography variant="h6" fontWeight="bold" gutterBottom>Participation by School</Typography>
+
+      {/* 3. Participation by Branch */}
+      <Grid item xs={12} md={6}>
+        <Paper elevation={4} sx={{ p: 3, borderRadius: '12px', height: '100%', overflowY: 'auto' }}>
+          <Typography variant="h6" fontWeight="bold" gutterBottom>
+            Participation by Branch
+          </Typography>
           <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-            <PieChart margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-              <Pie data={schoolData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#8884d8" label={renderCustomizedLabel} labelLine={false}>
-                {schoolData.map((entry, index) => ( <Cell key={`cell-school-${index}`} fill={COLORS[index % COLORS.length]} /> ))}
+            <PieChart>
+              <Pie
+                data={branchData.slice(0, 10)} // ✅ show top 10 branches only
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={90}
+                label={renderLabel}
+                labelLine={false}
+              >
+                {branchData.map((entry, index) => (
+                  <Cell key={`cell-branch-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
               </Pie>
-              <Tooltip formatter={(value, name, props) => [`${value} Students`, props.payload.name]} />
-              <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ paddingLeft: '15px' }} />
+              <Tooltip />
+              <Legend layout="vertical" verticalAlign="middle" align="right" />
             </PieChart>
           </ResponsiveContainer>
+          {branchData.length > 10 && (
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', textAlign: 'center' }}>
+              Showing top 10 branches
+            </Typography>
+          )}
         </Paper>
       </Grid>
-      <Grid item xs={12} md={6} key="year-chart">
-        <Paper elevation={4} sx={{ p: 3, borderRadius: '12px' }}>
-          <Typography variant="h6" fontWeight="bold" gutterBottom>Participation by Year</Typography>
+
+      {/* 4. Participation by School */}
+      <Grid item xs={12} md={6}>
+        <Paper elevation={4} sx={{ p: 3, borderRadius: '12px', height: '100%', overflowY: 'auto' }}>
+          <Typography variant="h6" fontWeight="bold" gutterBottom>
+            Participation by School
+          </Typography>
           <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
-            <PieChart margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-              <Pie data={yearData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#8884d8" label={renderCustomizedLabel} labelLine={false}>
-                {yearData.map((entry, index) => ( <Cell key={`cell-year-${index}`} fill={COLORS[index % COLORS.length]} /> ))}
+            <PieChart>
+              <Pie
+                data={schoolData.slice(0, 10)} // ✅ show top 10 schools only
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={90}
+                label={renderLabel}
+                labelLine={false}
+              >
+                {schoolData.map((entry, index) => (
+                  <Cell key={`cell-school-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
               </Pie>
-              <Tooltip formatter={(value, name, props) => [`${value} Students`, props.payload.name]} />
-              <Legend layout="vertical" verticalAlign="middle" align="right" wrapperStyle={{ paddingLeft: '15px' }} />
+              <Tooltip />
+              <Legend layout="vertical" verticalAlign="middle" align="right" />
             </PieChart>
           </ResponsiveContainer>
+          {schoolData.length > 10 && (
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block', textAlign: 'center' }}>
+              Showing top 10 schools
+            </Typography>
+          )}
         </Paper>
       </Grid>
     </Grid>
@@ -161,7 +223,7 @@ function AnalyticsCharts({ results, loading }) {
 }
 
 
-// --- 3. Results Table Component ---
+// --- 3. Results Table Component (Unchanged) ---
 function ResultsTable({ results, loading }) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -252,7 +314,7 @@ function ResultsTable({ results, loading }) {
 }
 
 
-// --- 4. Main Admin Dashboard Component ---
+// --- 4. Main Admin Dashboard Component (Unchanged except layout tweaks) ---
 export default function AdminDashboard() {
   const [currentTab, setCurrentTab] = useState(0);
   const [results, setResults] = useState([]); 
@@ -296,7 +358,6 @@ export default function AdminDashboard() {
         {currentTab === 1 && <QuestionManager />}
         {currentTab === 2 && <AnalyticsCharts results={results} loading={loading} />} 
         {currentTab === 3 && <QuizControls />}
-
       </Container>
     </Box>
   );
