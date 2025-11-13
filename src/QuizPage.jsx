@@ -31,13 +31,7 @@ const loadInitialState = () => {
       quizState: savedQuizState,
     };
   }
-  // Default state if nothing is saved
-  return {
-    userDetails: null,
-    questions: [],
-    answers: {},
-    quizState: 'registering',
-  };
+  return { userDetails: null, questions: [], answers: {}, quizState: 'registering' };
 };
 
 
@@ -51,15 +45,13 @@ export default function QuizPage() {
   const [finalScore, setFinalScore] = useState(null);
   const submittedRef = useRef(false);
 
-  // This useEffect now ONLY checks the quiz activation status
   useEffect(() => {
     const checkStatus = async () => {
       try {
         const statusResponse = await axios.get(`${import.meta.env.VITE_API_URL}/api/quiz/status`);
         if (!statusResponse.data.isActive) {
-          setQuizState('inactive'); // If not active, override all other states
+          setQuizState('inactive');
         } else if (quizState === 'loading') {
-          // If quiz is active and we are still loading, default to registering
           setQuizState('registering');
         }
       } catch (error) {
@@ -68,7 +60,7 @@ export default function QuizPage() {
       }
     };
     checkStatus();
-  }, [quizState]); // Rerun if quizState changes (e.g., from loading)
+  }, [quizState]);
 
   const handleRegister = (data) => {
     setUserDetails(data);
@@ -79,12 +71,15 @@ export default function QuizPage() {
 
   const handleStartQuiz = async () => {
     try {
+      // --- THIS IS THE CORRECTED LINE ---
       const response = await axios.get(`${import.meta.env.VITE_API_URL}/api/quiz/start`);
       const fetchedQuestions = response.data;
+      
       const questionsWithShuffledOptions = fetchedQuestions.map(q => ({ ...q, options: shuffleArray(q.options) }));
+      
       setQuestions(questionsWithShuffledOptions);
       setQuizState('active');
-      setAnswers({}); // Clear any old answers
+      setAnswers({});
       localStorage.setItem('questions', JSON.stringify(questionsWithShuffledOptions));
       localStorage.setItem('answers', JSON.stringify({}));
       localStorage.setItem('quizState', 'active');
@@ -148,44 +143,18 @@ export default function QuizPage() {
   };
 
   if (quizState === 'loading') {
-    return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <CircularProgress />
-      </Box>
-    );
+    return ( <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}> <CircularProgress /> </Box> );
   }
 
   if (quizState === 'inactive') {
-    return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', p: 2, backgroundColor: '#f5f5f5' }}>
-        <Container maxWidth="sm">
-          <Paper elevation={4} sx={{ p: 4, borderRadius: '12px', textAlign: 'center' }}>
-            <Typography variant="h4" fontWeight="700" gutterBottom>Quiz Closed</Typography>
-            <Typography variant="h6" color="text.secondary">
-              The quiz is not currently active. Please check back later.
-            </Typography>
-          </Paper>
-        </Container>
-      </Box>
-    );
+    return ( <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', p: 2, backgroundColor: '#f5f5f5' }}> <Container maxWidth="sm"> <Paper elevation={4} sx={{ p: 4, borderRadius: '12px', textAlign: 'center' }}> <Typography variant="h4" fontWeight="700" gutterBottom>Quiz Closed</Typography> <Typography variant="h6" color="text.secondary"> The quiz is not currently active. Please check back later. </Typography> </Paper> </Container> </Box> );
   }
 
   if (quizState === 'registering') return <Registration onRegister={handleRegister} />;
   if (quizState === 'not-started' && userDetails) return <StartScreen userName={userDetails.name} onStartQuiz={handleStartQuiz} />;
 
   if (quizState === 'submitted') {
-    return (
-      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', p: 2, backgroundColor: '#f5f5f5' }}>
-        <Container maxWidth="md">
-          <Paper elevation={4} sx={{ p: 6, borderRadius: '12px', textAlign: 'center' }}>
-            <Typography variant="h4" fontWeight="700" gutterBottom>Submission Received!</Typography>
-            <Typography variant="h6" color="text.secondary" sx={{ mt: 3 }}>
-              Thank you for participating.
-            </Typography>
-          </Paper>
-        </Container>
-      </Box>
-    );
+    return ( <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', p: 2, backgroundColor: '#f5f5f5' }}> <Container maxWidth="md"> <Paper elevation={4} sx={{ p: 6, borderRadius: '12px', textAlign: 'center' }}> <Typography variant="h4" fontWeight="700" gutterBottom>Submission Received!</Typography> <Typography variant="h6" color="text.secondary" sx={{ mt: 3 }}> Thank you for participating. </Typography> </Paper> </Container> </Box> );
   }
 
   const answeredCount = Object.keys(answers).length;
@@ -199,8 +168,7 @@ export default function QuizPage() {
           <Paper elevation={4} sx={{ p: { xs: 2, sm: 4 }, borderRadius: '12px' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
               <Typography variant="h5" component="h1" fontWeight="700">MERN Stack Quiz</Typography>
-              {/* --- TIMER DURATION SET TO 3600 SECONDS (60 MINUTES) --- */}
-              <Timer duration={3600} onTimeUp={submitQuiz} />
+              <Timer duration={1200} onTimeUp={submitQuiz} />
             </Box>
             <Box sx={{ mb: 4 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
@@ -231,9 +199,5 @@ export default function QuizPage() {
     );
   }
 
-  return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <CircularProgress />
-    </Box>
-  );
+  return ( <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}> <CircularProgress /> </Box> );
 }

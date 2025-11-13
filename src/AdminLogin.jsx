@@ -15,18 +15,16 @@ export default function AdminLogin() {
     setError('');
 
     try {
-      // --- THIS LINE IS NOW CORRECTED ---
+      // --- THIS IS THE CORRECTED LINE ---
       const response = await axios.post(`${import.meta.env.VITE_API_URL}/api/admin/login`, {
         username,
         password,
       });
 
       if (response.status === 200) {
-        // If login is successful, redirect to the dashboard
         navigate('/admin/dashboard');
       }
     } catch (err) {
-      // If login fails, show an error message
       setError('Invalid username or password.');
       console.error('Admin login failed:', err);
     }
