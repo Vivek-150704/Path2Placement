@@ -17,14 +17,15 @@ import {
   Tabs, 
   Tab,
   Grid,
-  Button // <-- Import Button
+  Button // Make sure Button is imported
 } from '@mui/material';
+// Correct import from recharts
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { CSVLink } from 'react-csv'; // <-- Import CSVLink
+import { CSVLink } from 'react-csv'; // Correct import from react-csv
 import QuestionManager from './QuestionManager';
 import QuizControls from './QuizControls';
 
-// --- 1. Helper function for Analytics (Unchanged) ---
+// --- 1. Helper function for Analytics ---
 const processAnalyticsData = (results) => {
   const scoreDistribution = {};
   const branchParticipation = {};
@@ -66,7 +67,7 @@ const processAnalyticsData = (results) => {
 };
 
 
-// --- 2. Analytics Charts Component (Unchanged) ---
+// --- 2. Analytics Charts Component ---
 function AnalyticsCharts({ results, loading }) {
   const { scoreData, branchData, schoolData, yearData } = processAnalyticsData(results);
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#8A2BE2', '#DC143C', '#20B2AA'];
@@ -160,7 +161,7 @@ function AnalyticsCharts({ results, loading }) {
 }
 
 
-// --- 3. Results Table Component (UPDATED with CSV Export) ---
+// --- 3. Results Table Component ---
 function ResultsTable({ results, loading }) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -172,7 +173,6 @@ function ResultsTable({ results, loading }) {
   };
   const paginatedResults = results.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
-  // --- NEW: Define headers for the CSV file ---
   const csvHeaders = [
     { label: "Name", key: "name" },
     { label: "USN", key: "usn" },
@@ -191,16 +191,14 @@ function ResultsTable({ results, loading }) {
     <Paper elevation={4} sx={{ p: 3, borderRadius: '12px' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="h6" fontWeight="bold">Student Quiz Submissions</Typography>
-        
-        {/* --- NEW: Add the CSV Download Button --- */}
         <Button
           variant="contained"
           color="success"
           disabled={loading}
-          sx={{ textDecoration: 'none' }} // Remove underline from CSVLink
+          sx={{ textDecoration: 'none' }}
         >
           <CSVLink
-            data={results} // Pass all results, not just paginated
+            data={results}
             headers={csvHeaders}
             filename={"quiz_results.csv"}
             style={{ textDecoration: 'none', color: 'white' }}
@@ -254,7 +252,7 @@ function ResultsTable({ results, loading }) {
 }
 
 
-// --- 4. Main Admin Dashboard Component (Unchanged) ---
+// --- 4. Main Admin Dashboard Component ---
 export default function AdminDashboard() {
   const [currentTab, setCurrentTab] = useState(0);
   const [results, setResults] = useState([]); 
